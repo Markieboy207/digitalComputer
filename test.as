@@ -1,0 +1,6 @@
+LDI 1 10
+LDI 2 5
+ADD 1 2 3
+RSH 1 5
+
+HLT

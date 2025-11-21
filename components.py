@@ -58,12 +58,12 @@ class ProgramCounter:
 
 class AritmeticLogicUnit:
     def __init__(self, bits=8):
-        self.flags = [0, 0] # Zero Flag, Carry Flag
+        self.flags = [0, 0] # Carry Flag, Zero Flag
         self.max_value = (1 << bits) - 1
     
     def set_flags(self, result):
-        self.flags[0] = 1 if result == 0 else 0
-        self.flags[1] = 1 if result > self.max_value else 0
+        self.flags[0] = 1 if result > self.max_value else 0
+        self.flags[1] = 0 if result == 0 else 1
 
     def add(self, a, b):
         return a + b
@@ -97,6 +97,6 @@ class AritmeticLogicUnit:
         elif alias == 'RSH':
             value = self.rsh(a)
         else:
-            raise ValueError(f"Unknown operation: {alias}")
+            raise ValueError(f"Unknown instruction: {alias}")
         self.set_flags(value)
-        return value
+        return value % self.max_value

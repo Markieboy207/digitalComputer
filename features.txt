@@ -1,0 +1,18 @@
+Language:
+- variable names (r for register and m for memory):   #name r8 variable_name
+- comments: //comment here
+- sudo instructions:
+    CMP A B == SUB A B 0
+- lables: .lable1 (JMP/BRH .lable1 will jump the first instruction after where the lable is defined)
+- BRH conditions: (C Z)
+    00, 01, 10, 11
+    ==, !=, >=, <
+    0, 1, 2, 3
+
+Assembler:
+1. remove comments and empty lines
+2. replace variable names with their respective register/memory addresses
+3. replace sudo instructions
+4. replace BRH conditions with integer values
+5. calculate lable indexes
+6. assemble

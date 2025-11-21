@@ -13,7 +13,7 @@ def BTD(binary_string):
         decimal_value += int(digit) * (2 ** index)
     return decimal_value
 
-class Operation:
+class Instruction:
     def __init__(self, opcode, segments=None, sizes=None):
         self.opcode = DTB(opcode, 4)
         self.segments = segments if segments is not None else []
@@ -52,7 +52,7 @@ class Operation:
         operands_binary = binary_instruction[4:]
         
         if opcode != self.opcode:
-            raise ValueError("Opcode does not match this operation")
+            raise ValueError("Opcode does not match this instruction")
         
         operands = []
         index = 0
@@ -61,7 +61,7 @@ class Operation:
             operand_binary = operands_binary[index:index+size]
             index += size
             
-            if segment == 'None':
+            if segment == 'none':
                 continue
             else:
                 operand_value = BTD(operand_binary)
@@ -69,19 +69,52 @@ class Operation:
         
         return operands
 
-OPERATIONS = {  
-    'HLT': Operation(opcode=0),
-    'LDI': Operation(opcode=1, segments=['REG A', 'VALUE'], sizes=[4, 8]),
-    'CAL': Operation(opcode=2, segments=['REG A', 'MEM B'], sizes=[4, 8]),
-    'STR': Operation(opcode=3, segments=['REG A', 'MEM B'], sizes=[4, 8]),
-    'JMP': Operation(opcode=4, segments=['None', 'ADDRESS'], sizes=[2, 10]),
-    'BRH': Operation(opcode=5, segments=['Flags', 'ADDRESS'], sizes=[2, 10]),
-    'PSH': Operation(opcode=6),
-    'RET': Operation(opcode=7),
-    'ADD': Operation(opcode=8, segments=['REG A', 'REG B', 'REG C'], sizes=[4, 4, 4]),
-    'SUB': Operation(opcode=9, segments=['REG A', 'REG B', 'REG C'], sizes=[4, 4, 4]),
-    'XOR': Operation(opcode=10, segments=['REG A', 'REG B', 'REG C'], sizes=[4, 4, 4]),
-    'OR': Operation(opcode=11, segments=['REG A', 'REG B', 'REG C'], sizes=[4, 4, 4]),
-    'AND': Operation(opcode=12, segments=['REG A', 'REG B', 'REG C'], sizes=[4, 4, 4]),
-    'RSH': Operation(opcode=13, segments=['REG A', 'None', 'REG C'], sizes=[4, 4, 4])
+class SudoInstruction:
+    # input:  "INSTRUCTION type type type"
+    # output: ["INSTRUCTION type type type", "INSTRUCTION type type type"]
+    # types: regA-regO, addr
+    #        memA-memZ, none
+    #        flag, reg0, valu
+    # example:
+    # input: "CMP regA regB"
+    # output: ["SUB regA regB 0"]
+
+    def __init__(self, sudo=None, instruction=[]):
+        self.sudo = sudo if sudo != None else ""
+        self.instruction = instruction
+
+        self.sudoOperands = self.sudo.split()[1:]
+
+    def translate(self, operands):
+        corrected = []
+        for instruct in self.instruction:
+            line = []
+            for operand in instruct.split():
+                if self.sudoOperands.count(operand) != 0:
+                    line.append(operands[self.sudoOperands.index(operand)])
+                else:
+                    line.append(operand)
+            corrected.append(" ".join(line))
+        return corrected
+
+INSTRUCTIONS = {  
+    'HLT': Instruction(opcode=0),
+    'LDI': Instruction(opcode=1, segments= ['regA', 'valu'], sizes=[4, 8]),
+    'CAL': Instruction(opcode=2, segments= ['regA', 'memB'], sizes=[4, 8]),
+    'STR': Instruction(opcode=3, segments= ['regA', 'memB'], sizes=[4, 8]),
+    'JMP': Instruction(opcode=4, segments= ['none', 'addr'], sizes=[2, 10]),
+    'BRH': Instruction(opcode=5, segments= ['flag', 'addr'], sizes=[2, 10]),
+    'PSH': Instruction(opcode=6),
+    'RET': Instruction(opcode=7),
+    'ADD': Instruction(opcode=8, segments= ['regA', 'regB', 'regC'], sizes=[4, 4, 4]),
+    'SUB': Instruction(opcode=9, segments= ['regA', 'regB', 'regC'], sizes=[4, 4, 4]),
+    'XOR': Instruction(opcode=10, segments=['regA', 'regB', 'regC'], sizes=[4, 4, 4]),
+    'OR':  Instruction(opcode=11, segments=['regA', 'regB', 'regC'], sizes=[4, 4, 4]),
+    'AND': Instruction(opcode=12, segments=['regA', 'regB', 'regC'], sizes=[4, 4, 4]),
+    'RSH': Instruction(opcode=13, segments=['regA', 'none', 'regC'], sizes=[4, 4, 4])
+}
+
+
+SUDO_INSTRUCTIONS = {
+    "CMP": SudoInstruction(sudo="CMP regA regB", instruction=["SUB regA regB reg0"])
 }

@@ -1,47 +1,52 @@
-from functions import OPERATIONS, BTD
+from functions import INSTRUCTIONS, BTD
 from components import *
+import json
 
-file = open("assembler_output.as", "r")
+CONFIG_FILE = open("interpreter_config.json")
+CONFIG = json.load(CONFIG_FILE)
+print(CONFIG)
 
 aliases = ['HLT','LDI','CAL','STR','JMP','BRH','PSH','RET','ADD','SUB','XOR','OR','AND','RSH']
 
-REG = Storage(16)
-MEM = Storage(256)
-STACK = Stack(8)
-PC = ProgramCounter(1024)
-ALU = AritmeticLogicUnit(255)
+REG = Storage(CONFIG["RAM_ADDRESSES"])
+MEM = Storage(CONFIG["MEMORY_ADDRESSES"])
+STACK = Stack(CONFIG["STACK_SIZE"])
+PC = ProgramCounter(CONFIG["PROGRAM_FILE_SIZE"])
+ALU = AritmeticLogicUnit(2 ** CONFIG["INTEGER_BITS"])
+
+file = open("assembler_output.as", "r")
 
 for line in file:
     alias = aliases[BTD(line[:4])]
-    operation = OPERATIONS[alias]
-    operands = operation.decode(line.strip())
-    
-    if alias == 'HLT':
-        print("Halting execution.")
-        break
-    elif alias == 'LDI':
-        REG.write(operands[0], operands[1])
-    elif alias == 'CAL':
-        value = MEM.read(operands[1])
-        REG.write(operands[0], value)
-    elif alias == 'STR':
-        value = REG.get(operands[0])
-        MEM.write(operands[1], value)
-    elif alias == 'JMP':
-        PC.set(operands[0])
-    elif alias == 'BRH':
-        if operands[0] == ''.join(ALU.flags):
-            PC.set(operands[1])
-    elif alias == 'PSH':
-        value = PC.get()  # Assuming we push the current program counter value
-        STACK.push(value)
-    elif alias == 'RET':
-        value = STACK.pop()
-        PC.set(value)
-    elif alias in ['ADD', 'SUB', 'XOR', 'OR', 'AND', 'RSH']:
-        a = REG.read(operands[0])
-        b = REG.read(operands[1]) if alias != 'RSH' else 0
-        result = ALU.operate(alias, a, b)
-        REG.write(operands[2] if alias != 'RSH' else operands[1], result)
+    instruction = INSTRUCTIONS[alias]
+    operands = instruction.decode(line.strip())
+    match alias:
+        case 'HLT':
+            print("Halting execution.")
+            break
+        case 'LDI':
+            REG.write(operands[0], operands[1])
+        case 'CAL':
+            value = MEM.read(operands[1])
+            REG.write(operands[0], value)
+        case 'STR':
+            value = REG.read(operands[0])
+            MEM.write(operands[1], value)
+        case 'JMP':
+            PC.set(operands[0])
+        case 'BRH':
+            if operands[0] == ''.join(str(i) for i in ALU.flags):
+                PC.set(operands[1])
+        case 'PSH':
+            value = PC.get()  # Assuming we push the current program counter value
+            STACK.push(value)
+        case 'RET':
+            value = STACK.pop()
+            PC.set(value)
+        case 'ADD' | 'SUB' | 'XOR' | 'OR' | 'AND' | 'RSH':
+            a = REG.read(operands[0])
+            b = REG.read(operands[1]) if alias != 'RSH' else 0
+            result = ALU.operate(alias, a, b)
+            REG.write(operands[2] if alias != 'RSH' else operands[1], result)
 
 REG.show()

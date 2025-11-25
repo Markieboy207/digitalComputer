@@ -4,7 +4,6 @@ import json
 
 CONFIG_FILE = open("interpreter_config.json")
 CONFIG = json.load(CONFIG_FILE)
-print(CONFIG)
 
 aliases = ['HLT','LDI','CAL','STR','JMP','BRH','PSH','RET','ADD','SUB','XOR','OR','AND','RSH']
 
@@ -47,6 +46,7 @@ for line in file:
             a = REG.read(operands[0])
             b = REG.read(operands[1]) if alias != 'RSH' else 0
             result = ALU.operate(alias, a, b)
+            print(operands)
             REG.write(operands[2] if alias != 'RSH' else operands[1], result)
 
 REG.show()

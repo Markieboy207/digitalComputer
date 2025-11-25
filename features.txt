@@ -1,5 +1,5 @@
 Language:
-- variable names (r for register and m for memory):   #name r8 variable_name
+- variable names (reg for register and mem for memory):   #name regA variable_name
 - comments: //comment here
 - sudo instructions:
     CMP A B == SUB A B 0

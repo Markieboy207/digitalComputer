@@ -20,15 +20,15 @@ class Instruction:
         self.sizes = sizes if sizes is not None else []
     
     def encode(self, operands):
-        if len(operands) != len(self.segments) - self.segments.count('None'):
-            raise ValueError(f"Expected {len(self.segments) - self.segments.count('None')} operands, got {len(operands)}")
+        if len(operands) != len(self.segments) - self.segments.count('none'):
+            raise ValueError(f"Expected {len(self.segments) - self.segments.count('none')} operands, got {len(operands)}")
         
-        if self.segments.count('None') > 0:
+        if self.segments.count('none') > 0:
             full_operands = []
             operand_index = 0
             for segment in self.segments:
-                if segment == 'None':
-                    full_operands.append('None')
+                if segment == 'none':
+                    full_operands.append('none')
                 else:
                     full_operands.append(operands[operand_index])
                     operand_index += 1
@@ -37,7 +37,7 @@ class Instruction:
         binary_instruction = ''
         
         for operand, size in zip(operands, self.sizes):
-            if operand == 'None':
+            if operand == 'none':
                 binary_instruction += '0' * size
             else:
                 binary_instruction += DTB(int(operand), size)
@@ -79,22 +79,23 @@ class SudoInstruction:
     # input: "CMP regA regB"
     # output: ["SUB regA regB 0"]
 
-    def __init__(self, sudo=None, instruction=[]):
+    def __init__(self, sudo=None, instruction=None):
         self.sudo = sudo if sudo != None else ""
-        self.instruction = instruction
+        self.instruction = instruction if instruction != None else []
 
         self.sudoOperands = self.sudo.split()[1:]
 
-    def translate(self, operands):
+    def translate(self, operandsLine):
         corrected = []
+        operands = operandsLine.split()[1:]
         for instruct in self.instruction:
-            line = []
+            instructLine = []
             for operand in instruct.split():
                 if self.sudoOperands.count(operand) != 0:
-                    line.append(operands[self.sudoOperands.index(operand)])
+                    instructLine.append(operands[self.sudoOperands.index(operand)])
                 else:
-                    line.append(operand)
-            corrected.append(" ".join(line))
+                    instructLine.append(operand)
+            corrected.append(" ".join(instructLine))
         return corrected
 
 INSTRUCTIONS = {  
@@ -116,5 +117,5 @@ INSTRUCTIONS = {
 
 
 SUDO_INSTRUCTIONS = {
-    "CMP": SudoInstruction(sudo="CMP regA regB", instruction=["SUB regA regB reg0"])
+    "CMP": SudoInstruction(sudo="CMP regA regB", instruction=["SUB regA regB 0"])
 }

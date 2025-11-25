@@ -1,4 +1,4 @@
-
+import warnings
 from math import sqrt, floor
 
 
@@ -18,9 +18,10 @@ class Storage:
     def write(self, address, value):
         if address < 0 or address >= self.size:
             raise IndexError("Address out of bounds")
-        if address == 0:
-            raise ValueError("Cannot write to register 0")
-        self.memory[address] = value
+        elif address == 0:
+            warnings.warn('Writing to address 0. Any value save to address 0 will not be saved')
+        else:
+            self.memory[address] = value
     
     def show(self):
         width = floor(sqrt(len(self.memory)))

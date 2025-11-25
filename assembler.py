@@ -6,7 +6,7 @@ program = file
 # (1) remove comments and empty lines
 noComments = []
 for line in program:
-    if len(line) != 0 and line[0:1] != "//":
+    if len(line.strip()) != 0 and line[0:1] != "//":
         noComments.append(line)
 program = noComments
 
@@ -38,9 +38,9 @@ for line in program:
     
     newLines = SUDO_INSTRUCTIONS[parts[0]].translate(line)
     for newLine in newLines:
-        noSudo.append(" ".join(newLine))
+        noSudo.append(newLine)
 program = noSudo
-
+print(*program)
 
 # (4) replace BRH conditions with integer values
 correctedBRH = []
